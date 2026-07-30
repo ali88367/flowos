@@ -29,3 +29,4 @@ npm run dev
 ## Data
 
 Everything is stored locally in the browser (`localStorage`). Export/import/clear from Settings.
+
