@@ -5,6 +5,7 @@ import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { MobileNav } from './MobileNav';
 import { GlobalShortcuts } from './GlobalShortcuts';
+import { AssistantButton } from '@/features/assistant/AssistantButton';
 
 // Overlay components are invisible until explicitly opened — deferring them
 // keeps cmdk/radix dialog code out of the bundle needed for first paint.
@@ -17,6 +18,9 @@ const QuickAddModal = lazy(() =>
 );
 const CreateProjectDialog = lazy(() =>
   import('@/features/projects/components/CreateProjectDialog').then((m) => ({ default: m.CreateProjectDialog })),
+);
+const AssistantPanel = lazy(() =>
+  import('@/features/assistant/AssistantPanel').then((m) => ({ default: m.AssistantPanel })),
 );
 
 function PageSkeleton() {
@@ -54,7 +58,9 @@ export function AppShell() {
         <QuickAddModal />
         <CreateProjectDialog />
         <Toaster />
+        <AssistantPanel />
       </Suspense>
+      <AssistantButton />
       <GlobalShortcuts />
     </div>
   );
