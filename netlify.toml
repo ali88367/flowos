@@ -6,3 +6,10 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Vite content-hashes filenames under /assets, so these are safe to cache
+# forever — a new deploy ships new filenames, never mutates old ones.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
