@@ -1,14 +1,23 @@
-import { Suspense } from 'react';
+import { lazy, Suspense } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { MobileNav } from './MobileNav';
-import { Toaster } from '@/components/ui/toaster';
-import { CommandPalette } from '@/components/command-palette/CommandPalette';
-import { QuickAddModal } from '@/features/tasks/components/QuickAddModal';
-import { CreateProjectDialog } from '@/features/projects/components/CreateProjectDialog';
 import { GlobalShortcuts } from './GlobalShortcuts';
+
+// Overlay components are invisible until explicitly opened — deferring them
+// keeps cmdk/radix dialog code out of the bundle needed for first paint.
+const Toaster = lazy(() => import('@/components/ui/toaster').then((m) => ({ default: m.Toaster })));
+const CommandPalette = lazy(() =>
+  import('@/components/command-palette/CommandPalette').then((m) => ({ default: m.CommandPalette })),
+);
+const QuickAddModal = lazy(() =>
+  import('@/features/tasks/components/QuickAddModal').then((m) => ({ default: m.QuickAddModal })),
+);
+const CreateProjectDialog = lazy(() =>
+  import('@/features/projects/components/CreateProjectDialog').then((m) => ({ default: m.CreateProjectDialog })),
+);
 
 function PageSkeleton() {
   return <div className="h-40 animate-pulse" />;
@@ -40,10 +49,12 @@ export function AppShell() {
         </main>
       </div>
       <MobileNav />
-      <CommandPalette />
-      <QuickAddModal />
-      <CreateProjectDialog />
-      <Toaster />
+      <Suspense fallback={null}>
+        <CommandPalette />
+        <QuickAddModal />
+        <CreateProjectDialog />
+        <Toaster />
+      </Suspense>
       <GlobalShortcuts />
     </div>
   );
