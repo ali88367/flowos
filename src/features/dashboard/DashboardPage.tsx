@@ -10,6 +10,7 @@ import { TodayProgressCard } from './components/TodayProgressCard';
 import { TodayTaskList } from './components/TodayTaskList';
 import { RecentActivity } from './components/RecentActivity';
 import { DailyNoteCard } from './components/DailyNoteCard';
+import { SuggestedTasksCard } from './components/SuggestedTasksCard';
 import { ProjectCard } from '@/features/projects/components/ProjectCard';
 
 export default function DashboardPage() {
@@ -46,6 +47,8 @@ export default function DashboardPage() {
           <TodayTaskList tasks={todayIncomplete} projectsById={projectsById} />
         </div>
       </div>
+
+      <SuggestedTasksCard />
 
       <section className="space-y-3">
         <h2 className="text-sm font-semibold text-foreground">Active Projects</h2>

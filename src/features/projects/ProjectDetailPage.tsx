@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, MoreHorizontal, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -14,7 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useDeleteProject, useProjects, useUpdateProject } from '@/hooks/useProjects';
 import { useTasks } from '@/hooks/useTasks';
-import { formatDueDate } from '@/utils/date';
+import { PROJECT_COLORS, type ProjectColor } from '@/types';
 import { cn } from '@/utils/cn';
 import { InlineTaskAdd } from '@/features/tasks/components/InlineTaskAdd';
 import { TaskItem } from '@/features/tasks/components/TaskItem';
@@ -41,8 +42,14 @@ export default function ProjectDetailPage() {
   const projectTasks = useMemo(() => (tasks ?? []).filter((t) => t.projectId === projectId), [tasks, projectId]);
 
   const [notes, setNotes] = useState('');
+  const [name, setName] = useState('');
+  const [deadline, setDeadline] = useState('');
   useEffect(() => {
-    if (project) setNotes(project.notes ?? '');
+    if (project) {
+      setNotes(project.notes ?? '');
+      setName(project.name);
+      setDeadline(project.deadline ?? '');
+    }
   }, [project?.id]);
 
   if (projectsLoading || tasksLoading) {
@@ -77,6 +84,24 @@ export default function ProjectDetailPage() {
     }
   }
 
+  function handleNameBlur() {
+    const trimmed = name.trim();
+    if (project && trimmed && trimmed !== project.name) {
+      updateProject.mutate({ id: project.id, patch: { name: trimmed } });
+    } else if (project) {
+      setName(project.name);
+    }
+  }
+
+  function handleDeadlineChange(value: string) {
+    setDeadline(value);
+    if (project) updateProject.mutate({ id: project.id, patch: { deadline: value || undefined } });
+  }
+
+  function handleColorChange(color: ProjectColor) {
+    if (project) updateProject.mutate({ id: project.id, patch: { color } });
+  }
+
   function handleDelete() {
     if (!project) return;
     deleteProject.mutate(project.id, { onSuccess: () => navigate('/projects') });
@@ -89,10 +114,15 @@ export default function ProjectDetailPage() {
         Projects
       </Link>
 
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-2.5">
-          <span className={cn('h-2.5 w-2.5 rounded-full', PROJECT_ACCENT[project.color])} />
-          <h1 className="text-2xl font-semibold tracking-tight">{project.name}</h1>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-2.5">
+          <span className={cn('h-2.5 w-2.5 shrink-0 rounded-full', PROJECT_ACCENT[project.color])} />
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onBlur={handleNameBlur}
+            className="h-auto border-0 bg-transparent px-0 text-2xl font-semibold tracking-tight focus-visible:ring-0"
+          />
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -113,13 +143,40 @@ export default function ProjectDetailPage() {
         <CardHeader>
           <CardTitle>Progress</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <ProgressBar value={progress} className="mb-3 h-2" />
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>
               {completed} of {total} tasks complete
             </span>
-            {project.deadline && <span>Due {formatDueDate(project.deadline)}</span>}
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+            <div className="flex gap-2">
+              {PROJECT_COLORS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => handleColorChange(c)}
+                  className={cn(
+                    'h-6 w-6 rounded-full transition-transform',
+                    PROJECT_ACCENT[c],
+                    project.color === c
+                      ? 'ring-2 ring-offset-2 ring-offset-card ring-foreground scale-105'
+                      : 'opacity-70',
+                  )}
+                  aria-label={c}
+                />
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-muted-foreground">Deadline</label>
+              <Input
+                type="date"
+                value={deadline}
+                onChange={(e) => handleDeadlineChange(e.target.value)}
+                className="h-8 w-auto"
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
