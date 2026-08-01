@@ -1,4 +1,4 @@
-import type { Project, Task } from '@/types';
+import type { Idea, Project, Task } from '@/types';
 import { formatDueDate, isOverdue, isToday, isUpcoming } from '@/utils/date';
 import { currentStreak, tasksCompletedInRange, weekRange } from '@/features/analytics/utils';
 import { fuzzyMatch } from './fuzzyMatch';
@@ -12,6 +12,7 @@ export function answerQuery(
   intent: Extract<AssistantIntent, { type: 'query' }>,
   tasks: Task[],
   projects: Project[],
+  ideas: Idea[],
 ): string {
   switch (intent.kind) {
     case 'today': {
@@ -65,6 +66,10 @@ export function answerQuery(
       const deadline = project.deadline ? `, due ${formatDueDate(project.deadline)}` : '';
       return `${project.name} is ${pct}% complete — ${remaining} task${remaining === 1 ? '' : 's'} left${deadline}.`;
     }
+    case 'ideas_list': {
+      if (ideas.length === 0) return "You don't have any ideas captured yet.";
+      return `Ideas:\n${ideas.map((i) => `• ${i.title}`).join('\n')}`;
+    }
     case 'help':
     default:
       return [
@@ -72,10 +77,11 @@ export function answerQuery(
         '• "add task buy milk tomorrow"',
         '• "add call mom to the health project friday"',
         '• "complete wire up command palette"',
-        '• "delete task old idea"',
+        '• "delete task cleanup"',
         '• "create project Marketing Site"',
+        '• "add idea dark mode toggle"',
         '• "what\'s due today", "what\'s overdue", "how many tasks left"',
-        '• "how\'s FlowOS Launch going"',
+        '• "how\'s FlowOS Launch going", "list ideas"',
       ].join('\n');
   }
 }

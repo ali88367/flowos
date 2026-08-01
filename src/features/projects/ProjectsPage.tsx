@@ -1,16 +1,41 @@
+import { useState } from 'react';
 import { FolderKanban, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useProjects } from '@/hooks/useProjects';
+import { useCreateProject, useProjects } from '@/hooks/useProjects';
 import { useTasks } from '@/hooks/useTasks';
 import { useUIStore } from '@/store/uiStore';
+import { toast } from '@/store/toastStore';
+import { formatDueDate } from '@/utils/date';
 import { ProjectCard } from './components/ProjectCard';
+import { parseProjectCommand } from './parseProjectCommand';
 
 export default function ProjectsPage() {
   const { data: projects, isLoading: projectsLoading } = useProjects();
   const { data: tasks, isLoading: tasksLoading } = useTasks();
   const setNewProjectOpen = useUIStore((s) => s.setNewProjectOpen);
+  const createProject = useCreateProject();
+  const [command, setCommand] = useState('');
+
+  function submitCommand() {
+    const { name, deadline } = parseProjectCommand(command);
+    if (!name) return;
+
+    createProject.mutate(
+      { name, deadline },
+      {
+        onSuccess: () => {
+          toast({
+            title: 'Project created',
+            description: deadline ? `${name} — due ${formatDueDate(deadline)}` : name,
+          });
+          setCommand('');
+        },
+      },
+    );
+  }
 
   if (projectsLoading || tasksLoading) {
     return (
@@ -33,6 +58,19 @@ export default function ProjectsPage() {
         <Button size="sm" onClick={() => setNewProjectOpen(true)}>
           <Plus className="h-4 w-4" />
           New project
+        </Button>
+      </div>
+
+      <div className="flex gap-2">
+        <Input
+          value={command}
+          onChange={(e) => setCommand(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && submitCommand()}
+          placeholder="Type a project name, e.g. Website Redesign due next friday"
+        />
+        <Button variant="outline" onClick={submitCommand}>
+          <Plus className="h-4 w-4" />
+          Add
         </Button>
       </div>
 

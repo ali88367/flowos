@@ -1,4 +1,4 @@
-import type { DailyLog, Project, Task } from '@/types';
+import type { DailyLog, Idea, Project, Task } from '@/types';
 import { createLocalStorageAdapter } from './localStorageAdapter';
 
 const STORAGE_PREFIX = 'flowos';
@@ -16,3 +16,4 @@ export const projectAdapter = createLocalStorageAdapter<Project>(
 export const dailyLogAdapter = createLocalStorageAdapter<DailyLog>(
   `${STORAGE_PREFIX}:daily-logs`,
 );
+export const ideaAdapter = createLocalStorageAdapter<Idea>(`${STORAGE_PREFIX}:ideas`);

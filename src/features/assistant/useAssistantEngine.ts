@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useCreateProject, useDeleteProject, useProjects } from '@/hooks/useProjects';
 import { useCreateTask, useDeleteTask, useTasks, useToggleTask } from '@/hooks/useTasks';
+import { useCreateIdea, useDeleteIdea, useIdeas } from '@/hooks/useIdeas';
 import { formatDueDate } from '@/utils/date';
 import { answerQuery } from './answerQuery';
 import { fuzzyMatch } from './fuzzyMatch';
@@ -10,11 +11,14 @@ import { resolveAndAct } from './resolveAndAct';
 export function useAssistantEngine() {
   const { data: tasks = [] } = useTasks();
   const { data: projects = [] } = useProjects();
+  const { data: ideas = [] } = useIdeas();
   const createTask = useCreateTask();
   const deleteTask = useDeleteTask();
   const toggleTask = useToggleTask();
   const createProject = useCreateProject();
   const deleteProject = useDeleteProject();
+  const createIdea = useCreateIdea();
+  const deleteIdea = useDeleteIdea();
 
   const handle = useCallback(
     async (rawText: string): Promise<string> => {
@@ -46,6 +50,24 @@ export function useAssistantEngine() {
           await createProject.mutateAsync({ name: intent.name });
           return `Created project "${intent.name}".`;
         }
+
+        case 'create_idea': {
+          if (!intent.title) return 'I need a title — try "add idea dark mode toggle".';
+          await createIdea.mutateAsync({ title: intent.title });
+          return `Captured idea "${intent.title}".`;
+        }
+
+        case 'delete_idea':
+          return resolveAndAct(
+            intent.query,
+            ideas,
+            (i) => i.title,
+            async (idea) => {
+              await deleteIdea.mutateAsync(idea.id);
+              return `Deleted idea "${idea.title}".`;
+            },
+            'idea',
+          );
 
         case 'delete_task':
           return resolveAndAct(
@@ -96,14 +118,25 @@ export function useAssistantEngine() {
           );
 
         case 'query':
-          return answerQuery(intent, tasks, projects);
+          return answerQuery(intent, tasks, projects, ideas);
 
         case 'unknown':
         default:
           return 'Not sure what you mean. Try "add task buy milk tomorrow", "what\'s due today", or "help".';
       }
     },
-    [tasks, projects, createTask, deleteTask, toggleTask, createProject, deleteProject],
+    [
+      tasks,
+      projects,
+      ideas,
+      createTask,
+      deleteTask,
+      toggleTask,
+      createProject,
+      deleteProject,
+      createIdea,
+      deleteIdea,
+    ],
   );
 
   return { handle };

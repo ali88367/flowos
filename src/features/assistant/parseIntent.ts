@@ -33,6 +33,12 @@ export function parseIntent(rawText: string): AssistantIntent {
   m = text.match(/^(?:delete|remove|archive)\s+(?:the\s+)?project\s+(.+)$/i);
   if (m) return { type: 'delete_project', query: cleanTitle(m[1]) };
 
+  m = text.match(/^(?:add|create|new|jot down|capture)\s+(?:an?\s+)?idea\s+(?:called\s+)?(.+)$/i);
+  if (m) return { type: 'create_idea', title: cleanTitle(m[1]) };
+
+  m = text.match(/^(?:delete|remove)\s+(?:the\s+)?idea\s+(.+)$/i);
+  if (m) return { type: 'delete_idea', query: cleanTitle(m[1]) };
+
   m = text.match(/^mark\s+(.+?)\s+as\s+done$/i);
   if (m) return { type: 'complete_task', query: cleanTitle(m[1]) };
 
@@ -56,6 +62,7 @@ export function parseIntent(rawText: string): AssistantIntent {
   if (/this week.*complet|complet.*this week/.test(lower)) return { type: 'query', kind: 'week_completed' };
   if (/\btoday\b/.test(lower)) return { type: 'query', kind: 'today' };
   if (/upcoming|this week|next few days/.test(lower)) return { type: 'query', kind: 'upcoming' };
+  if (/ideas?/.test(lower)) return { type: 'query', kind: 'ideas_list' };
   if (/how many|count/.test(lower)) return { type: 'query', kind: 'task_count' };
   if (/(list|show|all).*projects?|projects?.*(list|show)/.test(lower)) {
     return { type: 'query', kind: 'projects_list' };

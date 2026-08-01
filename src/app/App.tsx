@@ -5,6 +5,7 @@ import { queryClient } from './queryClient';
 import { router } from '@/routes/router';
 import { useTheme } from '@/hooks/useTheme';
 import { seedIfEmpty } from '@/services';
+import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
 
 function AppBootstrap() {
   useTheme();
@@ -18,8 +19,10 @@ function AppBootstrap() {
 
 export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AppBootstrap />
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AppBootstrap />
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
