@@ -1,11 +1,12 @@
 import { motion } from 'framer-motion';
-import { GripVertical, StickyNote } from 'lucide-react';
+import { GripVertical, StickyNote, Trash2 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import type { Project, Task } from '@/types';
 import { cn } from '@/utils/cn';
 import { formatDueDate, isOverdue } from '@/utils/date';
-import { useToggleTask } from '@/hooks/useTasks';
+import { useDeleteTask, useToggleTask } from '@/hooks/useTasks';
 
 const PROJECT_DOT: Record<Project['color'], string> = {
   violet: 'bg-violet-500',
@@ -27,6 +28,7 @@ interface TaskItemProps {
 
 export function TaskItem({ task, project, showProject = true, onClick, dragHandleProps, selected }: TaskItemProps) {
   const toggleTask = useToggleTask();
+  const deleteTask = useDeleteTask();
   const overdue = !task.completed && isOverdue(task.dueDate);
 
   return (
@@ -74,6 +76,17 @@ export function TaskItem({ task, project, showProject = true, onClick, dragHandl
           {formatDueDate(task.dueDate)}
         </span>
       )}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7 shrink-0 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
+        onClick={(e) => {
+          e.stopPropagation();
+          deleteTask.mutate(task.id);
+        }}
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </Button>
     </motion.li>
   );
 }

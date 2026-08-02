@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { useTasks } from '@/hooks/useTasks';
 import { useProjects } from '@/hooks/useProjects';
 import { StatCard } from './components/StatCard';
+import { ActivityReport } from './components/ActivityReport';
 import {
   completionRate,
   currentStreak,
@@ -66,6 +67,8 @@ export default function AnalyticsPage() {
         <StatCard icon={ListChecks} label="Weekly completion" value={`${stats.weeklyRate}%`} />
         <StatCard icon={TrendingUp} label="Monthly completion" value={`${stats.monthlyRate}%`} />
       </div>
+
+      <ActivityReport tasks={tasks ?? []} projects={activeProjects} />
 
       <Card>
         <CardHeader>
